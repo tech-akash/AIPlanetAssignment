@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+
 # Create your models here.
 
 Roles=(
@@ -18,7 +19,7 @@ class Profile(models.Model):
     role=models.CharField(choices=Roles,default='Student',max_length=15)
 
 class Hackathon(models.Model):
-    postedBy=models.ForeignKey(User,on_delete=models.CASCADE,null=True)
+    postedBy=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     title=models.CharField(max_length=255,null=True,blank=True)
     description=models.TextField(null=True,blank=True)
     bgImage=models.ImageField(upload_to="BgImage/",null=True,blank=True)
@@ -59,9 +60,8 @@ class Submission(models.Model):
         num_submissions = sum(bool(field) for field in [self.link, self.file, self.image])
         if num_submissions != 1:
             raise ValidationError("Exactly one submission type must be provided.")
-        
         hackathon_submission_type = self.hackathon.submissionType
-        if self.link and hackathon_submission_type!='link' or self.file and hackathon_submission_type!='file' or self.image and hackathon_submission_type!='image':
+        if (self.link and hackathon_submission_type!='link') or (self.file and hackathon_submission_type!='file') or (self.image and hackathon_submission_type!='image'):
             raise ValidationError(f"Only {hackathon_submission_type} submission is allowed in this  hackathons.")
         
 

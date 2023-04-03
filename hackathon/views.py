@@ -8,7 +8,7 @@ from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from django.conf import settings
-
+from django.views.decorators.csrf import csrf_exempt
 class GoogleLogin(SocialLoginView):
     authentication_classes = [] # disable authentication
     adapter_class = GoogleOAuth2Adapter
@@ -48,13 +48,16 @@ def CreateHackthon(request,*args, **kwargs):
 
 
 
+# @csrf_protect(False)
+# @csrf_exempt
 @api_view(['POST'])
 def MakeSubmission(request,pk,*args, **kwargs):
+    # csrf_secret = request.COOKIES.get(settings.CSRF_COOKIE_NAME)
     HackObj=Hackathon.objects.get(id=pk)
     serializer=SubmissionSerializer(data=request.data)
-    if serializers.is_valid():
+    if serializer.is_valid():
         try:
-            serializers.save(user=request.user,hackathon=HackObj)
+            serializer.save(user=request.user,hackathon=HackObj)
         except:
             return Response({'status':400,'error':serializer.error_messages})
     else:
@@ -65,8 +68,9 @@ def MakeSubmission(request,pk,*args, **kwargs):
 
 @api_view(['GET'])
 def GetEnrolledHackathon(request,*args, **kwargs):
-    obj=Enroll.objects.filter(user=request.user).select_related('hackathon')
-    serializer=HackathonSerializer(obj,many=True)
+    enrollments=Enroll.objects.filter(user=request.user)
+    hackathons = [enrollment.hackathon for enrollment in enrollments]
+    serializer=HackathonSerializer(hackathons,many=True)
     return Response({'status':200,'payload':serializer.data})
 
 
