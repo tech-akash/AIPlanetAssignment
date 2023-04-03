@@ -8,7 +8,7 @@ class HackathonSerializer(serializers.ModelSerializer):
         fields='__all__'
     
     def create(self, validated_data):
-        instance = Submission(**validated_data)
+        instance = Hackathon(**validated_data)
         instance.full_clean()
         instance.save()
         return instance
